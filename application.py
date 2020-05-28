@@ -8,7 +8,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 channels = []
-channel_posts = []
+channel_posts = {}
+current_channel = None
+
+MAX_POSTS_NUMBER = 100
 
 @app.route("/")
 def index():
@@ -20,20 +23,30 @@ def addDisplayName(data):
     emit("confirmDisplayName", displayName, broadcast=True)
 
 @socketio.on("submit channel")
-def addDisplayName(data):
+def addChannel(data):
+    global current_channel
     channel = data["channel"]
     if channel in channels:
         return render_template("index.html", channels=channels)
+    current_channel = channel
+    if channel not in channel_posts:
+        channel_posts[channel] = []
     channels.append(channel)
     emit("addChannel", channel, broadcast=True)
 
-@app.route("/channel/<string:channel>")
+@app.route("/channel/<string:channel>", methods=["POST", "GET"])
 def channel(channel):
-    #socketio.emit("displayChannel", channel=channel, broadcast=False)
-    return render_template("index.html", channels=channels)
+    global current_channel
+    current_channel = channel
+    if request.method == "GET":
+        return render_template("index.html", channels=channels)
+    return jsonify(channel_posts[current_channel])
 
-@app.route("/posts", methods=["POST"])
-def posts():
-    post = request.form.get("post")
-    channel_posts.append(post)
-    return jsonify(channel_posts)
+@socketio.on("submit post")
+def addPost(data):
+    global current_channel
+    post = data["post"]
+    if len(channel_posts[current_channel]) == MAX_POSTS_NUMBER:
+        channel_posts[current_channel].pop(0)
+    channel_posts[current_channel].append(post)
+    emit("addPost", post, broadcast=True)

@@ -28,7 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         document.querySelector('#post').onsubmit = () => {
-            
+            const post = document.querySelector("#post_text").value;
+
+            socket.emit('submit post', {'post': post})
+
             return false;
         };
 
@@ -57,16 +60,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#channels').append(li);
     });
 
+    // When a post is created, add it to the channel
+    socket.on('addPost', post => {
+        add_post(post);
+    });
+
 });
 
 // Renders contents of new page in main view.
 function load_page(name) {
     const request = new XMLHttpRequest();
-    request.open('GET', `/channel/${name}`);
+    request.open('POST', `/channel/${name}`);
     request.onload = () => {
-        const response = request.responseText;
+        const data = JSON.parse(request.responseText);
         //document.querySelector('#body').innerHTML = response;
         document.querySelector('#posts').innerHTML = `successfully displaying channel ${name}.`;
+        data.forEach(add_post);
         // Push state to URL.
         document.title = name;
         history.pushState(null, name, name);
@@ -74,13 +83,13 @@ function load_page(name) {
     request.send();
 }
 
-// Add a new post with given contents to DOM.
-const post_template = Handlebars.compile(document.querySelector('#posts').innerHTML);
+// Add a new post
 function add_post(contents) {
-
     // Create new post.
-    const post = post_template({'contents': contents});
+    const post = document.createElement('div');
+    post.className = 'post';
+    post.innerHTML = contents;
 
     // Add post to DOM.
-    document.querySelector('#posts').innerHTML += post;
+    document.querySelector('#posts').append(post);
 }
