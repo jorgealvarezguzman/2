@@ -29,8 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelector('#post').onsubmit = () => {
             const post = document.querySelector("#post_text").value;
+            var displayName = localStorage.getItem('displayName');
+            var timestamp = + new Date()
 
-            socket.emit('submit post', {'post': post})
+            socket.emit('submit post', {'post': post, 'displayName': displayName, 'timestamp': timestamp})
 
             return false;
         };
@@ -74,7 +76,7 @@ function load_page(name) {
     request.onload = () => {
         const data = JSON.parse(request.responseText);
         //document.querySelector('#body').innerHTML = response;
-        document.querySelector('#posts').innerHTML = `successfully displaying channel ${name}.`;
+        document.querySelector('#posts').innerHTML = `CHANNEL ${name}`;
         data.forEach(add_post);
         // Push state to URL.
         document.title = name;

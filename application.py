@@ -1,7 +1,8 @@
 import os
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_socketio import SocketIO, emit
+from datetime import datetime
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
@@ -15,6 +16,9 @@ MAX_POSTS_NUMBER = 100
 
 @app.route("/")
 def index():
+    if current_channel is not None:
+        return redirect(url_for('channel', channel=current_channel))
+
     return render_template("index.html", channels=channels)
 
 @socketio.on("submit displayName")
@@ -45,7 +49,8 @@ def channel(channel):
 @socketio.on("submit post")
 def addPost(data):
     global current_channel
-    post = data["post"]
+    post = data["displayName"] + " " + str(datetime.now()) + " " + data["post"]
+
     if len(channel_posts[current_channel]) == MAX_POSTS_NUMBER:
         channel_posts[current_channel].pop(0)
     channel_posts[current_channel].append(post)
