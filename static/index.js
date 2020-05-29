@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#form').onsubmit = () => {
             var displayName = document.querySelector('#displayName').value;
 
+            document.querySelector('#nameHeader').innerHTML = `${displayName}`;
+
+            localStorage.setItem('displayName', `${displayName}`);
+
             socket.emit('submit displayName', {'displayName': displayName});
 
             return false;
@@ -52,17 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (element.className == 'delete') {
                 const post = element.parentNode.childNodes[0].nodeValue;
+                const displayName = localStorage.getItem('displayName');
                 element.parentElement.remove();
-                socket.emit('delete post', {'post': post})
+                socket.emit('delete post', {'post': post, 'displayName': displayName})
             }
         });
 
     });
 
     socket.on('confirmDisplayName', displayName => {
-        document.querySelector('#nameHeader').innerHTML = `${displayName}`;
         document.querySelector('#result').innerHTML = `Welcome ${displayName}!`;
-        localStorage.setItem('displayName', `${displayName}`);
     });
 
     // When a channel is created, add to the unordered list
