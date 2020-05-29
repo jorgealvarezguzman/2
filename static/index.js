@@ -46,6 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
+        // If remove button is clicked
+        document.addEventListener('click', event => {
+            const element = event.target;
+
+            if (element.className == 'delete') {
+                const post = element.parentNode.childNodes[0].nodeValue;
+                element.parentElement.remove();
+                socket.emit('delete post', {'post': post})
+            }
+        });
+
     });
 
     socket.on('confirmDisplayName', displayName => {
@@ -69,14 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+
 // Renders contents of new page in main view.
 function load_page(name) {
     const request = new XMLHttpRequest();
     request.open('POST', `/channel/${name}`);
     request.onload = () => {
         const data = JSON.parse(request.responseText);
-        //document.querySelector('#body').innerHTML = response;
-        document.querySelector('#posts').innerHTML = `CHANNEL ${name}`;
+        const head = document.createElement('h3');
+        head.innerHTML = `${name}`;
+        document.querySelector('#posts').innerHTML = '';
+        document.querySelector('#posts').append(head);
         data.forEach(add_post);
         // Push state to URL.
         document.title = name;
@@ -89,8 +103,14 @@ function load_page(name) {
 function add_post(contents) {
     // Create new post.
     const post = document.createElement('div');
+    var button = document.createElement('button');
+
+    button.innerHTML = 'Delete';
+    button.className = 'delete';
+
     post.className = 'post';
     post.innerHTML = contents;
+    post.appendChild(button);
 
     // Add post to DOM.
     document.querySelector('#posts').append(post);

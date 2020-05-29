@@ -55,3 +55,13 @@ def addPost(data):
         channel_posts[current_channel].pop(0)
     channel_posts[current_channel].append(post)
     emit("addPost", post, broadcast=True)
+
+@socketio.on("delete post")
+def deletePost(data):
+    global current_channel
+    global channel_posts
+
+    post = data['post']
+
+    if post in channel_posts[current_channel]:
+        channel_posts[current_channel].remove(post)
