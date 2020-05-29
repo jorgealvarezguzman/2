@@ -62,6 +62,8 @@ def deletePost(data):
     global channel_posts
 
     post = data['post']
+    displayName = data['displayName']
 
-    if post in channel_posts[current_channel]:
-        channel_posts[current_channel].remove(post)
+    if displayName in post:
+        if post in channel_posts[current_channel]:
+            channel_posts[current_channel].remove(post)
